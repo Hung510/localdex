@@ -84,7 +84,15 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity-alias>
-        
+        <!-- Lắng nghe sự kiện cắm cáp/thiết bị ngoài để tự động bật DeX -->
+        <receiver
+            android:name=".DisplayConnectReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
+                <action android:name="android.intent.action.HDMI_PLUGGED" />
+            </intent-filter>
+        </receiver>
         <!-- ========================================== -->
         <!-- BỔ SUNG: Khai báo LocalDeX Widget Provider -->
         <!-- ========================================== -->

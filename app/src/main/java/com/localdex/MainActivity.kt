@@ -52,7 +52,7 @@ class MainActivity : AppCompatActivity() {
             statusText.postDelayed({ checkStatus() }, 500)
         }
 
-        // === BỔ SUNG: XỬ LÝ KÍCH HOẠT TỪ WIDGET ===
+        // === XỬ LÝ KÍCH HOẠT TỰ ĐỘNG TỪ WIDGET & SAMSUNG ROUTINES ===
         handleWidgetIntent(intent)
     }
 
@@ -65,11 +65,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun handleWidgetIntent(currentIntent: Intent) {
-        if (currentIntent.action == "ACTION_START_DEX") {
-            // Xóa action để tránh lặp lại hành động khi xoay màn hình hoặc mở lại app
+        // Kiểm tra nếu gọi từ Widget hoặc từ tùy chọn Shortcut của Samsung Routines
+        if (currentIntent.action == "ACTION_START_DEX" || currentIntent.component?.className?.endsWith("StartDexShortcut") == true) {
+            // Xóa action để tránh lặp lại hành động khi xoay màn hình hoặc resume app
             currentIntent.action = null
             
-            // Tự động gọi hàm startDex() ngay lập tức y hệt như bấm nút START DEX
+            // Tự động kích hoạt chạy DeX ngay lập tức
             startDex()
         }
     }

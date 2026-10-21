@@ -51,11 +51,27 @@ class MainActivity : AppCompatActivity() {
             DexService.stop(this)
             statusText.postDelayed({ checkStatus() }, 500)
         }
+
+        // === BỔ SUNG: XỬ LÝ KÍCH HOẠT TỪ WIDGET ===
+        handleWidgetIntent(intent)
     }
 
-    override fun onNewIntent(intent: Intent) {
+    override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
-        setIntent(intent)
+        if (intent != null) {
+            setIntent(intent)
+            handleWidgetIntent(intent)
+        }
+    }
+
+    private fun handleWidgetIntent(currentIntent: Intent) {
+        if (currentIntent.action == "ACTION_START_DEX") {
+            // Xóa action để tránh lặp lại hành động khi xoay màn hình hoặc mở lại app
+            currentIntent.action = null
+            
+            // Tự động gọi hàm startDex() ngay lập tức y hệt như bấm nút START DEX
+            startDex()
+        }
     }
 
     override fun onResume() {
@@ -156,24 +172,24 @@ class MainActivity : AppCompatActivity() {
             append("Setup Progress:\n\n")
             append("$step1 Step 1: Enable Developer Options\n")
             if (!devModeEnabled) {
-                append("   • Settings → About phone → Software information\n")
-                append("   • Tap \"Build number\" 7 times\n\n")
+                append("    • Settings → About phone → Software information\n")
+                append("    • Tap \"Build number\" 7 times\n\n")
             } else {
-                append("   Complete!\n\n")
+                append("    Complete!\n\n")
             }
             append("$step2 Step 2: Enable Notifications\n")
             if (!notificationsEnabled) {
-                append("   • Required to enter pairing codes\n\n")
+                append("    • Required to enter pairing codes\n\n")
             } else {
-                append("   Complete!\n\n")
+                append("    Complete!\n\n")
             }
             append("$step3 Step 3: Pair with Wireless ADB\n")
             if (devModeEnabled && notificationsEnabled) {
-                append("   • Tap \"Start Pairing\" below\n")
-                append("   • In Wireless debugging, tap \"Pair device with pairing code\"\n")
-                append("   • Enter the code in the LocalDex notification\n")
+                append("    • Tap \"Start Pairing\" below\n")
+                append("    • In Wireless debugging, tap \"Pair device with pairing code\"\n")
+                append("    • Enter the code in the LocalDex notification\n")
             } else {
-                append("   Complete previous steps first\n")
+                append("    Complete previous steps first\n")
             }
         }
 

@@ -1,4 +1,4 @@
-package com.sam1am.localdex
+package com.localdex
 
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager

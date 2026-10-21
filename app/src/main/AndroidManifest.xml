@@ -15,6 +15,10 @@
     <uses-permission
         android:name="android.permission.WRITE_SECURE_SETTINGS"
         tools:ignore="ProtectedPermissions" />
+    <!-- Quyền hiển thị trên ứng dụng khác (để app tự bật lên mượt mà) -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <!-- Quyền thay đổi cài đặt hệ thống (để tự động bật lại Wireless Debugging nếu bị tắt) -->
+    <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" tools:ignore="ProtectedPermissions" />
 
     <application
         android:allowBackup="true"

@@ -1,39 +1,103 @@
-name: Build Android APK
+name: Release
 
 on:
   push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Resolve version from the release tag
+        id: version
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$TAG" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            echo "Tag '${TAG}' is not a vMAJOR.MINOR.PATCH release tag." >&2
+            exit 1
+          fi
+          major="${BASH_REMATCH[1]}"
+          minor="${BASH_REMATCH[2]}"
+          patch="${BASH_REMATCH[3]}"
+          # Derived from the version itself so it only ever grows and never has to
+          # be remembered (same scheme as anyapk).
+          code=$(( major * 10000 + minor * 100 + patch ))
+          echo "version=${major}.${minor}.${patch}" >> "$GITHUB_OUTPUT"
+          echo "versionCode=${code}" >> "$GITHUB_OUTPUT"
+          echo "Releasing ${TAG} as versionCode ${code}"
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'temurin'
-        java-version: '17'
+      # The build comes from the tag itself, not from whatever main has moved on
+      # to since.
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 1
 
-    - name: Setup Android SDK
-      uses: android-actions/setup-android@v3
-      with:
-        packages: 'platform-tools build-tools;34.0.0 platforms;android-34'
+      - name: Align version for build
+        run: |
+          set -euo pipefail
+          version="${{ steps.version.outputs.version }}"
+          code="${{ steps.version.outputs.versionCode }}"
+          sed -i -E "s/(versionName\s*=\s*)\"[^\"]+\"/\1\"${version}\"/" app/build.gradle.kts
+          sed -i -E "s/(versionCode\s*=\s*)[0-9]+/\1${code}/" app/build.gradle.kts
+          grep -E 'versionName|versionCode' app/build.gradle.kts
 
-    - name: Grant execute permission for Gradle wrapper
-      run: chmod +x gradlew
+      # Debug builds are signed with the runner's auto-generated debug keystore.
+      # Cache it under a fixed key so every release carries the same signature —
+      # otherwise each tag would need an uninstall/reinstall on the device.
+      - name: Cache debug keystore
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: debug-keystore-v1
 
-    - name: Build Debug APK with Gradle
-      run: ./gradlew assembleDebug --no-daemon
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
 
-    - name: Upload APK Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: localdex-debug-apk
-        path: app/build/outputs/apk/debug/app-debug.apk
-        if-no-files-found: error
+      # Thêm bước cấu hình Android SDK packages để tránh lỗi sdkmanager tools cũ
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools build-tools;34.0.0 platforms;android-34'
+
+      - uses: gradle/actions/setup-gradle@v3
+
+      - name: Build debug APK
+        run: ./gradlew --no-daemon assembleDebug
+
+      - name: Stage APK with release name
+        run: |
+          set -euo pipefail
+          mkdir -p release
+          cp app/build/outputs/apk/debug/app-debug.apk \
+             "release/localdex-${{ steps.version.outputs.version }}-debug.apk"
+          ls -la release/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: apk
+          path: release/*.apk
+          retention-days: 7
+          if-no-files-found: error
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          # The tag already exists and already points at the right commit; this
+          # only attaches the build to it.
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          generate_release_notes: true
+          files: release/*.apk

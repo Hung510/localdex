@@ -72,6 +72,19 @@
             </intent-filter>
         </receiver>
 
+        <!-- Phím tắt giúp Samsung Routines hiển thị tùy chọn riêng thay vì chỉ mở app trơ trơ -->
+        <activity-alias
+            android:name=".StartDexShortcut"
+            android:targetActivity=".MainActivity"
+            android:exported="true"
+            android:label="Bật LocalDeX ngay"
+            android:icon="@mipmap/ic_launcher">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity-alias>
+        
         <!-- ========================================== -->
         <!-- BỔ SUNG: Khai báo LocalDeX Widget Provider -->
         <!-- ========================================== -->

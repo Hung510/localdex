@@ -67,6 +67,22 @@
                 <action android:name="com.localdex.PAIRING_CANCEL" />
             </intent-filter>
         </receiver>
+
+        <!-- ========================================== -->
+        <!-- BỔ SUNG: Khai báo LocalDeX Widget Provider -->
+        <!-- ========================================== -->
+        <receiver
+            android:name=".LocalDexWidgetProvider"
+            android:exported="true"
+            android:label="LocalDeX Quick Launch">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/localdex_widget_info" />
+        </receiver>
+
     </application>
 
 </manifest>

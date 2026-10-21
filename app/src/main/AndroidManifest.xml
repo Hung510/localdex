@@ -17,8 +17,6 @@
         tools:ignore="ProtectedPermissions" />
     <!-- Quyền hiển thị trên ứng dụng khác (để app tự bật lên mượt mà) -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-    <!-- Quyền thay đổi cài đặt hệ thống (để tự động bật lại Wireless Debugging nếu bị tắt) -->
-    <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" tools:ignore="ProtectedPermissions" />
 
     <application
         android:allowBackup="true"
@@ -50,7 +48,7 @@
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|density|keyboard|keyboardHidden|navigation|uiMode"
             android:theme="@style/Theme.LocalDex.Viewer" />
 
-        <!-- Owns the DeX session; its notification is the guaranteed stop switch. -->
+        <!-- Owns the Dex session; its notification is the guaranteed stop switch. -->
         <service
             android:name=".DexService"
             android:exported="false" />

@@ -10,8 +10,10 @@ import android.widget.RemoteViews
 class LocalDexWidgetProvider : AppWidgetProvider() {
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
         for (appWidgetId in appWidgetIds) {
+            // Tạo Intent truyền Action yêu cầu Start DeX và gửi tới MainActivity
             val intent = Intent(context, MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                action = "ACTION_START_DEX"
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
             }
             
             val pendingIntent = PendingIntent.getActivity(
@@ -19,11 +21,12 @@ class LocalDexWidgetProvider : AppWidgetProvider() {
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
 
-            val views = RemoteViews(context.packageName, R.layout.widget_localdex).apply {
-                setOnClickPendingIntent(R.id.widget_button, pendingIntent)
+            val packageName = context.packageName
+            val views = RemoteViews(packageName, context.resources.getIdentifier("widget_localdex", "layout", packageName)).apply {
+                setOnClickPendingIntent(context.resources.getIdentifier("widget_button", "id", packageName), pendingIntent)
             }
 
-            appWidgetManager.updateAppWidget(appWidgetId, views)
+            appwidgetManager.updateAppWidget(appWidgetId, views)
         }
     }
 }
